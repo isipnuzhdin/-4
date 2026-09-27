@@ -1,0 +1,157 @@
+abstract class GarageItem {
+  final String name;
+
+  GarageItem(this.name);
+
+  void showInfo();
+}
+
+
+class Car extends GarageItem {
+  final String brand;
+
+  Car(this.brand) : super('Автомобиль');
+
+  @override
+  void showInfo() {
+    print('$name: $brand');
+  }
+}
+
+class Bicycle extends GarageItem {
+  final String brand;
+
+  Bicycle(this.brand) : super('Велосипед');
+
+  @override
+  void showInfo() {
+    print('$name: $brand');
+  }
+}
+
+class Box extends GarageItem {
+  final String contents;
+
+  Box(this.contents) : super('Коробка');
+
+  @override
+  void showInfo() {
+    print('$name: внутри $contents');
+  }
+}
+
+abstract class GarageStorage {
+  void add(GarageItem item);
+  void remove(String name);
+  void showAll();
+}
+
+class Garage implements GarageStorage {
+  final List<GarageItem> _items = [];
+
+  @override
+  void add(GarageItem item) {
+    _items.add(item);
+  }
+
+  @override
+  void remove(String name) {
+    final index = _items.indexWhere((item) => item.name == name);
+
+    if (index == -1) {
+      print('Объект "$name" не найден.');
+      return;
+    }
+
+    final removed = _items.removeAt(index);
+    print('Из гаража забрали: ${removed.name}.');
+  }
+
+  @override
+  void showAll() {
+    if (_items.isEmpty) {
+      print('Гараж пуст.');
+      return;
+    }
+
+    print('Содержимое гаража:');
+
+    for (var i = 0; i < _items.length; i++) {
+      print('${i + 1}.');
+      _items[i].showInfo();
+    }
+  }
+}
+
+
+abstract class GarageDecorator implements GarageStorage {
+  final GarageStorage garage;
+
+  GarageDecorator(this.garage);
+
+  @override
+  void add(GarageItem item) {
+    garage.add(item);
+  }
+
+  @override
+  void remove(String name) {
+    garage.remove(name);
+  }
+
+  @override
+  void showAll() {
+    garage.showAll();
+  }
+}
+
+
+class LoggingGarageDecorator extends GarageDecorator {
+  LoggingGarageDecorator(super.garage);
+
+  @override
+  void add(GarageItem item) {
+    print('[Декоратор] Добавляем объект: ${item.name}');
+    super.add(item);
+  }
+
+  @override
+  void remove(String name) {
+    print('[Декоратор] Пытаемся забрать: $name');
+    super.remove(name);
+  }
+
+  @override
+  void showAll() {
+    print('[Декоратор] Запрашиваем содержимое гаража.');
+    super.showAll();
+  }
+}
+
+void main() {
+  print('========== ЗАДАНИЕ №5: ГАРАЖ ==========\n');
+
+
+  final garage = Garage();
+ 
+  final decoratedGarage = LoggingGarageDecorator(garage);
+
+  
+  decoratedGarage.add(Car('BMW'));
+  decoratedGarage.add(Bicycle('Stels'));
+  decoratedGarage.add(Box('Инструменты'));
+
+  print('\n--- Все объекты в гараже ---');
+  decoratedGarage.showAll();
+
+  print('\n--- Забираем объект ---');
+  decoratedGarage.remove('Велосипед');
+
+  print('\n--- Содержимое после удаления ---');
+  decoratedGarage.showAll();
+
+  print('\n--- Попытка забрать отсутствующий объект ---');
+  decoratedGarage.remove('Телевизор');
+
+  print('\nПрограмма завершена.');
+}
